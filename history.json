@@ -1,0 +1,355 @@
+[
+    {
+        "disease": "Fever",
+        "confidence": 100.0,
+        "symptoms": [
+            "fever",
+            "headache"
+        ],
+        "timestamp": "2026-04-21T14:34:46.899377"
+    },
+    {
+        "symptoms": [
+            "headache"
+        ],
+        "disease": "Fever",
+        "confidence": 100.0,
+        "timestamp": "2026-04-21T14:39:35.060375"
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "body pain"
+        ],
+        "disease": "Fever",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "body pain"
+        ],
+        "disease": "Fever",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "cough"
+        ],
+        "disease": "Cold",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 100.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "cough"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "headache"
+        ],
+        "disease": "Fever",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "headache"
+        ],
+        "disease": "Fever",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "headache"
+        ],
+        "disease": "Fever",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "cough"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "stress"
+        ],
+        "disease": "Headache",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "joint pain"
+        ],
+        "disease": "Joint Pain",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "joint pain"
+        ],
+        "disease": "Arthritis (Possible Joint Inflammation)",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "joint pain"
+        ],
+        "disease": "Arthritis (Possible Joint Inflammation)",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "joint pain"
+        ],
+        "disease": "Arthritis (Possible Joint Inflammation)",
+        "confidence": 50.0
+    },
+    {
+        "symptoms": [
+            "sneezing"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    },
+    {
+        "symptoms": [
+            "cough"
+        ],
+        "disease": "Cold",
+        "confidence": 33.3
+    }
+]
