@@ -713,7 +713,45 @@ elif page == "📊 Analytics":
         col3.markdown("<div class='card'>👨‍⚕️ Consult doctor if patterns repeat</div>", unsafe_allow_html=True)
 
 
+# ---------------- HISTORY PAGE ----------------
+elif page == "📜 History":
 
+    st.markdown("""
+    <div style="padding-bottom:20px;">
+        <h1 style="font-size:38px;">📜 Health History</h1>
+        <p style="color:#aaa;">Track your past analyses and results</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    history = load_history()
+
+    if history:
+
+        # -------- CLEAR BUTTON --------
+        col1, col2 = st.columns([3,1])
+        with col2:
+            if st.button("🗑️ Clear History"):
+                save_history([])
+                st.success("History cleared!")
+                st.rerun()
+
+        st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+
+        # -------- SHOW HISTORY --------
+        for i, h in enumerate(reversed(history), 1):
+
+            st.markdown(f"""
+            <div class="card" style="margin-bottom:12px;">
+                <p style="color:#94a3b8;">Record {i}</p>
+                <b>Symptoms:</b> {", ".join(h['symptoms'])}<br>
+                <b>Condition:</b> {h['disease']}<br>
+                <b>Confidence:</b> {h['confidence']}%
+            </div>
+            """, unsafe_allow_html=True)
+
+    else:
+        st.info("No history available yet. Start analyzing to generate data.")
+        
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
@@ -852,41 +890,3 @@ Built with ❤️ using AI • Your Name
 </div>
 """, unsafe_allow_html=True)
     
-# ---------------- HISTORY PAGE ----------------
-elif page == "📜 History":
-
-    st.markdown("""
-    <div style="padding-bottom:20px;">
-        <h1 style="font-size:38px;">📜 Health History</h1>
-        <p style="color:#aaa;">Track your past analyses and results</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    history = load_history()
-
-    if history:
-
-        # -------- CLEAR BUTTON --------
-        col1, col2 = st.columns([3,1])
-        with col2:
-            if st.button("🗑️ Clear History"):
-                save_history([])
-                st.success("History cleared!")
-                st.rerun()
-
-        st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
-
-        # -------- SHOW HISTORY --------
-        for i, h in enumerate(reversed(history), 1):
-
-            st.markdown(f"""
-            <div class="card" style="margin-bottom:12px;">
-                <p style="color:#94a3b8;">Record {i}</p>
-                <b>Symptoms:</b> {", ".join(h['symptoms'])}<br>
-                <b>Condition:</b> {h['disease']}<br>
-                <b>Confidence:</b> {h['confidence']}%
-            </div>
-            """, unsafe_allow_html=True)
-
-    else:
-        st.info("No history available yet. Start analyzing to generate data.")
