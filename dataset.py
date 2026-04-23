@@ -61,7 +61,7 @@ health_data = [
 
     #  SENIOR EXAMPLES
     {
-        "disease": "Arthritis (Possible Joint Inflammation)",
+        "disease": "Arthritis)",
         "symptoms": ["joint pain", "stiffness"],
         "medicines": ["Ibuprofen"],
         "age_group": "senior",
