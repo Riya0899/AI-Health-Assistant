@@ -150,7 +150,6 @@ if "page" not in st.session_state:
 #     st.session_state.analyze_clicked = False
 
 # ---------------- SIDEBAR ----------------
-# ---------------- SIDEBAR ----------------
 st.sidebar.markdown("""
 <div style="padding-bottom:10px;">
     <h2 style="margin-bottom:2px;">🧠 Health AI</h2>
@@ -168,7 +167,7 @@ MENU
 
 page = st.sidebar.radio(
     "",
-    ["🏠 Home", "🩺 Analyze", "📊 Analytics", "ℹ️ About"],
+    ["🏠 Home", "🩺 Analyze","📊 Analytics","📜History" "ℹ️ About"],
     index=["🏠 Home", "🩺 Analyze", "📊 Analytics", "ℹ️ About"].index(st.session_state.page)
 )
 
@@ -852,3 +851,42 @@ elif page == "ℹ️ About":
 Built with ❤️ using AI • Your Name
 </div>
 """, unsafe_allow_html=True)
+    
+# ---------------- HISTORY PAGE ----------------
+elif page == "📜 History":
+
+    st.markdown("""
+    <div style="padding-bottom:20px;">
+        <h1 style="font-size:38px;">📜 Health History</h1>
+        <p style="color:#aaa;">Track your past analyses and results</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    history = load_history()
+
+    if history:
+
+        # -------- CLEAR BUTTON --------
+        col1, col2 = st.columns([3,1])
+        with col2:
+            if st.button("🗑️ Clear History"):
+                save_history([])
+                st.success("History cleared!")
+                st.rerun()
+
+        st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+
+        # -------- SHOW HISTORY --------
+        for i, h in enumerate(reversed(history), 1):
+
+            st.markdown(f"""
+            <div class="card" style="margin-bottom:12px;">
+                <p style="color:#94a3b8;">Record {i}</p>
+                <b>Symptoms:</b> {", ".join(h['symptoms'])}<br>
+                <b>Condition:</b> {h['disease']}<br>
+                <b>Confidence:</b> {h['confidence']}%
+            </div>
+            """, unsafe_allow_html=True)
+
+    else:
+        st.info("No history available yet. Start analyzing to generate data.")
