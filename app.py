@@ -716,7 +716,7 @@ elif page == "📊 Analytics":
 
 
 # ---------------- HISTORY PAGE ----------------
-elif page == "📜 History":
+elif page == "📜History":
 
     st.markdown("""
     <div style="padding-bottom:20px;">
