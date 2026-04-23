@@ -167,8 +167,8 @@ MENU
 
 page = st.sidebar.radio(
     "",
-    ["🏠Home", "🩺Analyze","📊Analytics","📜History" ,"ℹ️About"],
-    index=["🏠Home", "🩺Analyze", "📊Analytics", "ℹ️About"].index(st.session_state.page)
+    ["🏠 Home", "🩺 Analyze","📊 Analytics","📜History" ,"ℹ️ About"],
+    index=["🏠 Home", "🩺 Analyze", "📊 Analytics", "ℹ️ About"].index(st.session_state.page)
 )
 
 # ---------------- HOME PAGE ----------------
