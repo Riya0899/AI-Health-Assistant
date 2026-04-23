@@ -167,8 +167,8 @@ MENU
 
 page = st.sidebar.radio(
     "",
-    ["🏠 Home", "🩺 Analyze","📊 Analytics","📜History" ,"ℹ️ About"],
-    index=["🏠 Home", "🩺 Analyze", "📊 Analytics", "ℹ️ About"].index(st.session_state.page)
+    ["🏠Home", "🩺Analyze","📊Analytics","📜History" ,"ℹ️About"],
+    index=["🏠Home", "🩺Analyze", "📊Analytics", "ℹ️About"].index(st.session_state.page)
 )
 
 # ---------------- HOME PAGE ----------------
@@ -714,7 +714,7 @@ elif page == "📊 Analytics":
 
 
 # ---------------- HISTORY PAGE ----------------
-elif page == "📜 History":
+elif page == "📜History":
 
     st.markdown("""
     <div style="padding-bottom:20px;">
@@ -886,7 +886,6 @@ elif page == "ℹ️ About":
     color:#64748b;
     font-size:13px;
 ">
-Built with ❤️ using AI • Your Name
 </div>
 """, unsafe_allow_html=True)
     
