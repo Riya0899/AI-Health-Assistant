@@ -4,6 +4,7 @@ import os    # file paths
 import plotly.express as px  # graphs
 from collections import Counter  # for counting frequency
 import re
+import plotly.graph_objects as go
 
 FILE_NAME = "history.json"  # create file handler
 
@@ -112,6 +113,75 @@ def predict_category(user_symptoms, age):
 
     # 👉 return TOP 3
     return results[:3]
+
+# -------- STEM GRAPH (CONFIDENCE SPIKES) --------
+def plot_confidence_stem(history):
+
+    if not history:
+        return None
+
+    x = list(range(1, len(history) + 1))
+    y = [h["confidence"] for h in history]
+
+    fig = go.Figure()
+
+    # vertical lines (stem)
+    for xi, yi in zip(x, y):
+        fig.add_trace(go.Scatter(
+            x=[xi, xi],
+            y=[0, yi],
+            mode='lines'
+        ))
+
+    # dots
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y,
+        mode='markers'
+    ))
+
+    fig.update_layout(
+        title="Confidence Spikes Over Time",
+        xaxis_title="Record Index",
+        yaxis_title="Confidence (%)"
+    )
+
+    return fig
+
+
+# -------- SYMPTOM COUNT TREND --------
+def plot_symptom_count(history):
+
+    if not history:
+        return None
+
+    counts = [len(h["symptoms"]) for h in history]
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        y=counts,
+        mode='lines+markers'
+    ))
+
+    fig.update_layout(
+        title="Symptom Detail Trend",
+        xaxis_title="Record Index",
+        yaxis_title="No. of Symptoms"
+    )
+
+    return fig
+
+
+# -------- REPEATED DISEASE ALERT --------
+def get_repeated_conditions(history):
+
+    diseases = [h["disease"] for h in history]
+    count = Counter(diseases)
+
+    repeated = {k: v for k, v in count.items() if v > 2}
+
+    return repeated
 
 
 # ---------------- DRUG INTERACTION ----------------

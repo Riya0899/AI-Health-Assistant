@@ -716,132 +716,137 @@ elif page == "📊 Analytics":
 
 
 # ---------------- HISTORY PAGE ----------------
+# ---------------- HISTORY PAGE ----------------
 elif page == "📜History":
 
     st.markdown("""
     <div style="padding-bottom:20px;">
         <h1 style="font-size:38px;">📜 Health History</h1>
-        <p style="color:#94a3b8;">Track your past analyses and results</p>
+        <p style="color:#94a3b8;">Track your past analyses with insights</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ✅ LOAD HISTORY FIRST (IMPORTANT)
     history = load_history()
 
     if history:
 
-        # -------- TOP ACTION --------
-        col1, col2 = st.columns([3,1])
-        with col2:
-            if st.button("🗑️ Clear"):
-                save_history([])
-                st.success("History cleared!")
-                st.rerun()
+        # -------- TOP STATS --------
+        col1, col2, col3 = st.columns(3)
+
+        total = len(history)
+        avg_conf = sum([h["confidence"] for h in history]) / total
+        diseases = [h["disease"] for h in history]
+        most_common = max(set(diseases), key=diseases.count)
+
+        col1.metric("Total Records", total)
+        col2.metric("Avg Confidence", f"{round(avg_conf,1)}%")
+        col3.metric("Top Condition", most_common)
 
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-        # -------- 📊 GRAPHS --------
-        st.markdown("### 📊 History Insights")
+        # -------- SEARCH FILTER --------
+        search = st.text_input("🔍 Search condition")
+
+        filtered_history = [
+            h for h in history
+            if search.lower() in h["disease"].lower()
+        ] if search else history
+
+        # -------- UNIQUE GRAPH SECTION --------
+        st.markdown("### 📊 Behavior Insights")
 
         col1, col2 = st.columns(2)
 
-        # 📈 Confidence Trend
+        # STEM GRAPH (confidence spikes)
         with col1:
-            confidences = [h['confidence'] for h in history]
+            fig1 = plot_confidence_stem(history)
+            if fig1:
+                st.plotly_chart(fig1, use_container_width=True)
 
-            fig = px.line(
-                x=list(range(1, len(confidences)+1)),
-                y=confidences,
-                labels={"x": "Analysis", "y": "Confidence"},
-                title="Confidence Trend"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-        # 🥧 Disease Distribution
+        # SYMPTOM COUNT TREND
         with col2:
-            diseases = [h['disease'] for h in history]
+            fig2 = plot_symptom_count(history)
+            if fig2:
+                st.plotly_chart(fig2, use_container_width=True)
 
-            fig2 = px.pie(
-                names=list(set(diseases)),
-                values=[diseases.count(d) for d in set(diseases)],
-                title="Condition Distribution"
-            )
-            st.plotly_chart(fig2, use_container_width=True)
+        # -------- REPEATED CONDITION ALERT --------
+        repeated = get_repeated_conditions(history)
 
-        st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
+        if repeated:
+            st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
 
-        # -------- 🌟 LATEST RECORD HIGHLIGHT --------
-        latest = history[-1]
-
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.08));
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid rgba(99,102,241,0.3);
-            margin-bottom:20px;
-        ">
-            <div style="font-size:13px; color:#94a3b8;">Latest Analysis</div>
-            <div style="font-size:22px; font-weight:600; margin-top:5px;">
-                {latest['disease']}
+            st.markdown("""
+            <div class="card" style="border-left:3px solid #ef4444;">
+                <h4>⚠️ Repeated Condition Alert</h4>
+                <p style="color:#cbd5f5; font-size:14px;">
+                These conditions appeared multiple times. Consider monitoring closely.
+                </p>
             </div>
-            <div style="margin-top:8px; color:#cbd5f5;">
-                Confidence: <b>{latest['confidence']}%</b>
-            </div>
-            <div style="margin-top:8px; color:#94a3b8; font-size:13px;">
-                Symptoms: {", ".join(latest['symptoms'])}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-        # -------- 📂 ALL RECORDS GRID --------
-        st.markdown("### 📂 All Records")
+            for disease, count in repeated.items():
+                st.warning(f"{disease} → {count} times")
 
-        cols = st.columns(2)
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-        for i, h in enumerate(reversed(history), 1):
+        # -------- TIMELINE VIEW --------
+        st.markdown("### 🕒 Recent Activity")
 
-            col = cols[i % 2]
+        # show only last 15 records
+        for i, h in enumerate(reversed(filtered_history[-15:]), 1):
 
-            with col:
-                st.markdown(f"""
-                <div class="card" style="margin-bottom:15px;">
-                    <div style="font-size:12px; color:#94a3b8;">
-                        Record {len(history) - i + 1}
-                    </div>
+            # color based on confidence
+            if h["confidence"] > 70:
+                color = "#22c55e"
+            elif h["confidence"] > 40:
+                color = "#facc15"
+            else:
+                color = "#ef4444"
 
-                    <div style="font-size:18px; font-weight:600; margin-top:4px;">
-                        {h['disease']}
-                    </div>
-
-                    <div style="margin-top:6px;">
-                        <span style="
-                            background: rgba(34,197,94,0.15);
-                            color:#22c55e;
-                            padding:3px 8px;
-                            border-radius:6px;
-                            font-size:12px;
-                        ">
-                            {h['confidence']}%
-                        </span>
-                    </div>
-
-                    <div style="margin-top:10px; font-size:13px; color:#cbd5f5;">
-                        {", ".join(h['symptoms'][:3])}
-                        {"..." if len(h['symptoms']) > 3 else ""}
-                    </div>
+            st.markdown(f"""
+            <div style="
+                border-left: 3px solid {color};
+                padding: 12px 15px;
+                margin-bottom: 12px;
+                background: #111827;
+                border-radius: 10px;
+            ">
+                <div style="font-size:12px; color:#64748b;">
+                    Record #{len(history)-i+1}
                 </div>
-                """, unsafe_allow_html=True)
+
+                <div style="font-size:18px; font-weight:600; margin-top:3px;">
+                    {h['disease']}
+                </div>
+
+                <div style="margin-top:6px;">
+                    <span style="
+                        background: rgba(99,102,241,0.15);
+                        color:#818cf8;
+                        padding:3px 8px;
+                        border-radius:6px;
+                        font-size:12px;
+                    ">
+                        {h['confidence']}%
+                    </span>
+                </div>
+
+                <div style="margin-top:8px; font-size:13px; color:#cbd5f5;">
+                    {", ".join(h['symptoms'])}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # -------- CLEAR BUTTON --------
+        st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+
+        if st.button("🗑️ Clear History"):
+            save_history([])
+            st.success("History cleared!")
+            st.rerun()
 
     else:
-        st.markdown("""
-        <div class="card" style="text-align:center;">
-            <h3>📭 No History Yet</h3>
-            <p style="color:#94a3b8;">
-            Start analyzing symptoms to build your history
-            </p>
-        </div>
-        """, unsafe_allow_html=True)           
+        st.info("No history available yet. Start analyzing to generate data.")       
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
