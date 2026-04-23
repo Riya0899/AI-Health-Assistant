@@ -1,5 +1,7 @@
 import streamlit as st
 from predictor import *
+import plotly.express as px
+
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="AI Health Assistant", layout="wide")
@@ -723,43 +725,123 @@ elif page == "📜 History":
     </div>
     """, unsafe_allow_html=True)
 
+    # ✅ LOAD HISTORY FIRST (IMPORTANT)
     history = load_history()
 
-import plotly.express as px
+    if history:
 
-if history:
+        # -------- TOP ACTION --------
+        col1, col2 = st.columns([3,1])
+        with col2:
+            if st.button("🗑️ Clear"):
+                save_history([])
+                st.success("History cleared!")
+                st.rerun()
 
-    st.markdown("### 📊 History Insights")
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+        # -------- 📊 GRAPHS --------
+        st.markdown("### 📊 History Insights")
 
-    # -------- CONFIDENCE TREND --------
-    with col1:
-        confidences = [h['confidence'] for h in history]
+        col1, col2 = st.columns(2)
 
-        fig = px.line(
-            x=list(range(1, len(confidences)+1)),
-            y=confidences,
-            labels={"x": "Analysis", "y": "Confidence"},
-            title="Confidence Trend"
-        )
+        # 📈 Confidence Trend
+        with col1:
+            confidences = [h['confidence'] for h in history]
 
-        st.plotly_chart(fig, use_container_width=True)
+            fig = px.line(
+                x=list(range(1, len(confidences)+1)),
+                y=confidences,
+                labels={"x": "Analysis", "y": "Confidence"},
+                title="Confidence Trend"
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-    # -------- DISEASE DISTRIBUTION --------
-    with col2:
-        diseases = [h['disease'] for h in history]
+        # 🥧 Disease Distribution
+        with col2:
+            diseases = [h['disease'] for h in history]
 
-        fig2 = px.pie(
-            names=list(set(diseases)),
-            values=[diseases.count(d) for d in set(diseases)],
-            title="Condition Distribution"
-        )
+            fig2 = px.pie(
+                names=list(set(diseases)),
+                values=[diseases.count(d) for d in set(diseases)],
+                title="Condition Distribution"
+            )
+            st.plotly_chart(fig2, use_container_width=True)
 
-        st.plotly_chart(fig2, use_container_width=True)
+        st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-           
+        # -------- 🌟 LATEST RECORD HIGHLIGHT --------
+        latest = history[-1]
+
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.08));
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(99,102,241,0.3);
+            margin-bottom:20px;
+        ">
+            <div style="font-size:13px; color:#94a3b8;">Latest Analysis</div>
+            <div style="font-size:22px; font-weight:600; margin-top:5px;">
+                {latest['disease']}
+            </div>
+            <div style="margin-top:8px; color:#cbd5f5;">
+                Confidence: <b>{latest['confidence']}%</b>
+            </div>
+            <div style="margin-top:8px; color:#94a3b8; font-size:13px;">
+                Symptoms: {", ".join(latest['symptoms'])}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # -------- 📂 ALL RECORDS GRID --------
+        st.markdown("### 📂 All Records")
+
+        cols = st.columns(2)
+
+        for i, h in enumerate(reversed(history), 1):
+
+            col = cols[i % 2]
+
+            with col:
+                st.markdown(f"""
+                <div class="card" style="margin-bottom:15px;">
+                    <div style="font-size:12px; color:#94a3b8;">
+                        Record {len(history) - i + 1}
+                    </div>
+
+                    <div style="font-size:18px; font-weight:600; margin-top:4px;">
+                        {h['disease']}
+                    </div>
+
+                    <div style="margin-top:6px;">
+                        <span style="
+                            background: rgba(34,197,94,0.15);
+                            color:#22c55e;
+                            padding:3px 8px;
+                            border-radius:6px;
+                            font-size:12px;
+                        ">
+                            {h['confidence']}%
+                        </span>
+                    </div>
+
+                    <div style="margin-top:10px; font-size:13px; color:#cbd5f5;">
+                        {", ".join(h['symptoms'][:3])}
+                        {"..." if len(h['symptoms']) > 3 else ""}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+    else:
+        st.markdown("""
+        <div class="card" style="text-align:center;">
+            <h3>📭 No History Yet</h3>
+            <p style="color:#94a3b8;">
+            Start analyzing symptoms to build your history
+            </p>
+        </div>
+        """, unsafe_allow_html=True)           
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
