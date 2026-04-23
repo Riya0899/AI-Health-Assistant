@@ -1,9 +1,8 @@
 import streamlit as st
 from predictor import *
 import plotly.express as px
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="AI Health Assistant", layout="wide")
