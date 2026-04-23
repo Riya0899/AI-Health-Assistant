@@ -720,19 +720,14 @@ elif page == "📊 Analytics":
 # ---------------- HISTORY PAGE ----------------
 elif page == "📜History":
 
-    st.markdown("""
-    <div style="padding-bottom:20px;">
-        <h1 style="font-size:38px;">📜 Health History</h1>
-        <p style="color:#aaa;">Track your past analyses and patterns</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.title("📜 Health History")
+    st.caption("Track your past analyses and patterns")
 
     history = load_history()
 
     if history:
 
         import pandas as pd
-        import plotly.express as px
 
         df = pd.DataFrame(history).reset_index(drop=True)
 
@@ -744,121 +739,108 @@ elif page == "📜History":
                 st.success("History cleared!")
                 st.rerun()
 
-        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+        st.divider()
 
         # =========================================================
-        # 🔥 GRAPHS SECTION
+        # 🔥 NEW GRAPHS SECTION
         # =========================================================
         col1, col2 = st.columns(2)
 
-        # -------- STEM STYLE GRAPH (FIXED LABELS) --------
+        # -------- STEM GRAPH (CONDITION FREQUENCY) --------
         with col1:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.subheader("🌿 Condition Frequency (Stem)")
 
-            # meaningful x labels
-            df["Record"] = ["R" + str(i+1) for i in range(len(df))]
+            condition_counts = df["disease"].value_counts()
 
-            fig = px.scatter(
-                df,
-                x="Record",
-                y="confidence",
-                hover_data=["disease", "symptoms"],
-                title="Confidence Trend (Recent Analyses)"
+            fig = go.Figure()
+
+            # stems
+            for cond, val in condition_counts.items():
+                fig.add_trace(go.Scatter(
+                    x=[cond, cond],
+                    y=[0, val],
+                    mode="lines",
+                    showlegend=False
+                ))
+
+            # markers
+            fig.add_trace(go.Scatter(
+                x=condition_counts.index,
+                y=condition_counts.values,
+                mode="markers+text",
+                text=condition_counts.values,
+                textposition="top center",
+                name="Frequency"
+            ))
+
+            fig.update_layout(
+                xaxis_title="Condition",
+                yaxis_title="Frequency",
+                height=400
             )
-
-            fig.update_traces(mode="markers+lines")
 
             st.plotly_chart(fig, use_container_width=True)
 
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # -------- TOP SYMPTOMS GRAPH --------
+        # -------- CONFIDENCE VARIABILITY SCATTER --------
         with col2:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.subheader("📈 Confidence Spread by Condition")
 
-            all_symptoms = []
-            for s in df["symptoms"]:
-                all_symptoms.extend(s)
+            fig2 = px.strip(
+                df,
+                x="disease",
+                y="confidence",
+                color="disease"
+            )
 
-            sym_df = pd.Series(all_symptoms).value_counts().reset_index()
-            sym_df.columns = ["Symptom", "Count"]
-
-            fig2 = px.bar(
-                sym_df.head(6),
-                x="Symptom",
-                y="Count",
-                title="Top Symptoms"
+            fig2.update_layout(
+                xaxis_title="Condition",
+                yaxis_title="Confidence (%)",
+                height=400,
+                showlegend=False
             )
 
             st.plotly_chart(fig2, use_container_width=True)
 
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
+        st.divider()
 
         # =========================================================
         # 🧠 INSIGHTS
         # =========================================================
+        st.subheader("🧠 AI Insight")
+
         avg_conf = df["confidence"].mean()
         most_common = df["disease"].mode()[0]
 
-        st.markdown(f"""
-        <div class="card">
-            <h3>🧠 AI Insight</h3>
-            <p class="summary">
-            Your most common condition is <b>{most_common}</b>.
-            Average confidence is <b>{round(avg_conf,1)}%</b>.
-            This suggests {"stable patterns" if avg_conf > 60 else "variable symptoms"}.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info(
+            f"Most common condition: **{most_common}** | "
+            f"Average confidence: **{avg_conf:.1f}%** | "
+            f"{'Stable pattern detected' if avg_conf > 60 else 'Symptoms vary over time'}"
+        )
 
-        st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
+        st.divider()
 
         # =========================================================
-        # 🕒 RECENT ACTIVITY (GRID)
+        # 🕒 RECENT ACTIVITY (CLEAN UI)
         # =========================================================
-        st.markdown("### 🕒 Recent Activity")
+        st.subheader("🕒 Recent Activity")
 
         recent = list(reversed(history))[:10]
-        cols = st.columns(2)
 
         for i, h in enumerate(recent):
+            with st.container():
+                col1, col2 = st.columns([3,1])
 
-            with cols[i % 2]:
+                with col1:
+                    st.markdown(f"**{h['disease']}**")
+                    st.caption(f"Symptoms: {', '.join(h['symptoms'])}")
 
-                st.markdown(f"""
-                <div class="card" style="margin-bottom:12px;">
+                with col2:
+                    st.metric("Confidence", f"{h['confidence']}%")
 
-                    <p style="color:#64748b; font-size:12px;">
-                        Record #{len(history)-i}
-                    </p>
-
-                    <div style="font-size:18px; font-weight:600;">
-                        {h['disease']}
-                    </div>
-
-                    <div style="margin-top:6px;">
-                        <span style="
-                            background: rgba(99,102,241,0.15);
-                            color:#818cf8;
-                            padding:4px 10px;
-                            border-radius:8px;
-                            font-size:12px;
-                        ">
-                            {h['confidence']}%
-                        </span>
-                    </div>
-
-                    <div style="margin-top:10px; font-size:13px; color:#cbd5f5;">
-                        {", ".join(h['symptoms'])}
-                    </div>
-
-                </div>
-                """, unsafe_allow_html=True)
+                st.divider()
 
     else:
-        st.info("No history available yet. Start analyzing to generate data.")  
+        st.info("No history available yet. Start analyzing to generate data.")
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
