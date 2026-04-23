@@ -18,8 +18,11 @@ def load_history():  # it loads the history from file
 
 
 def save_history(history):
-    with open(FILE_NAME, "w") as f:
-        json.dump(history, f, indent=4)
+    try:
+        with open("history.json", "w") as f:
+            json.dump(history, f)
+    except:
+        pass
 
 
 # ---------------- SYMPTOM EXTRACTION ----------------

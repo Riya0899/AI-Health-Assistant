@@ -390,56 +390,51 @@ elif page == "🩺 Analyze":
             results = predict_category(normalized, age)
 
             if results and len(results) > 0:
-                st.subheader("📋 Possible Conditions")
+                # create columns (max 3)
+                cols = st.columns(min(len(results), 3))
 
-                for i, res in enumerate(results, 1):
+                for i, (col, res) in enumerate(zip(cols, results), 1):
 
-                    interactions = check_interaction(res['medicines'], habits)
+                    with col:
+                        interactions = check_interaction(res['medicines'], habits)
 
-                    # labels
-                    if i == 1:
-                        st.success("🟢 Most Likely")
-                    elif i == 2:
-                        st.warning("🟡 Possible")
-                    else:
-                        st.info("🔵 Less Likely")
+                        # Label
+                        if i == 1:
+                            st.success("🟢 Most Likely")
+                        elif i == 2:
+                            st.warning("🟡 Possible")
+                        else:
+                            st.info("🔵 Less Likely")
 
-                    st.markdown(f"""
-                    <div class="card">
-                        <p style="color:#94a3b8;">Option {i}</p>
-                        <h4>{res['disease']}</h4>
-                        <p>Confidence: {res['confidence']}%</p>
-                    </div>
-                    """, unsafe_allow_html=True)
+                        # Card UI
+                        st.markdown(f"""
+                        <div class="card">
+                            <p style="color:#94a3b8;">Option {i}</p>
+                            <h4>{res['disease']}</h4>
+                            <p>Confidence: {res['confidence']}%</p>
+                        </div>
+                        """, unsafe_allow_html=True)
 
-                    # 👉 EXPANDER MUST BE INSIDE LOOP
-                    with st.expander(f"View Full Report - Option {i}"):
+                        # Expandable full report
+                        with st.expander("View Full Report"):
+                            report = generate_report(
+                                res,
+                                interactions,
+                                age,
+                                normalized,
+                                habits
+                            )
 
-                        # for i, res in enumerate(results, 1):
-                        #     interactions = check_interaction(res['medicines'], habits)
-                        report= generate_report(
-                        res,   # ✅ single item
-                        interactions,
-                        age,
-                        normalized,
-                        habits  
-                        )
+                            st.markdown(report)
 
-                        st.markdown(report)
-                        import uuid
-                        st.download_button(
-                            label=f"📄 Download Report",
-                            data=report,
-                            file_name=f"health report.txt",
-                            mime="text/plain",
-                            key=f"download_{i}_{uuid.uuid4()}"  # ✅ FIX
-                        )
-
-                # track only best result
-                track_history(normalized, results[0])
-
-            else:
-                st.warning("⚠️ No match found. Try adding more symptoms.")
+                            import uuid
+                            st.download_button(
+                                label="📄 Download Report",
+                                data=report,
+                                file_name=f"health_report_{i}.txt",
+                                mime="text/plain",
+                                key=f"download_{i}_{uuid.uuid4()}"
+                            )
 # ---------------- ANALYTICS ----------------
 elif page == "📊 Analytics":
 
