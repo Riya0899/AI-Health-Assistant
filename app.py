@@ -714,44 +714,52 @@ elif page == "📊 Analytics":
 
 
 # ---------------- HISTORY PAGE ----------------
-elif page == "📜History":
+elif page == "📜 History":
 
     st.markdown("""
     <div style="padding-bottom:20px;">
         <h1 style="font-size:38px;">📜 Health History</h1>
-        <p style="color:#aaa;">Track your past analyses and results</p>
+        <p style="color:#94a3b8;">Track your past analyses and results</p>
     </div>
     """, unsafe_allow_html=True)
 
     history = load_history()
 
-    if history:
+import plotly.express as px
 
-        # -------- CLEAR BUTTON --------
-        col1, col2 = st.columns([3,1])
-        with col2:
-            if st.button("🗑️ Clear History"):
-                save_history([])
-                st.success("History cleared!")
-                st.rerun()
+if history:
 
-        st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+    st.markdown("### 📊 History Insights")
 
-        # -------- SHOW HISTORY --------
-        for i, h in enumerate(reversed(history), 1):
+    col1, col2 = st.columns(2)
 
-            st.markdown(f"""
-            <div class="card" style="margin-bottom:12px;">
-                <p style="color:#94a3b8;">Record {i}</p>
-                <b>Symptoms:</b> {", ".join(h['symptoms'])}<br>
-                <b>Condition:</b> {h['disease']}<br>
-                <b>Confidence:</b> {h['confidence']}%
-            </div>
-            """, unsafe_allow_html=True)
+    # -------- CONFIDENCE TREND --------
+    with col1:
+        confidences = [h['confidence'] for h in history]
 
-    else:
-        st.info("No history available yet. Start analyzing to generate data.")
-        
+        fig = px.line(
+            x=list(range(1, len(confidences)+1)),
+            y=confidences,
+            labels={"x": "Analysis", "y": "Confidence"},
+            title="Confidence Trend"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    # -------- DISEASE DISTRIBUTION --------
+    with col2:
+        diseases = [h['disease'] for h in history]
+
+        fig2 = px.pie(
+            names=list(set(diseases)),
+            values=[diseases.count(d) for d in set(diseases)],
+            title="Condition Distribution"
+        )
+
+        st.plotly_chart(fig2, use_container_width=True)
+
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+           
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
