@@ -1,7 +1,9 @@
 import streamlit as st
 from predictor import *
 import plotly.express as px
-
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="AI Health Assistant", layout="wide")
@@ -718,145 +720,96 @@ elif page == "📊 Analytics":
 # ---------------- HISTORY PAGE ----------------
 elif page == "📜History":
 
-    st.markdown("""
-    <div style="padding-bottom:20px;">
-        <h1 style="font-size:38px;">📜 Health History</h1>
-        <p style="color:#aaa;">Track your past analyses and patterns</p>
-    </div>
-    """, unsafe_allow_html=True)
 
-    history = load_history()
+    st.markdown("## 📜 Health History")
+    st.caption("Track your past analyses and patterns")
 
-    if history:
+    # -------------------------
+    # LOAD HISTORY
+    # -------------------------
+    history = st.session_state.get("history", [])
 
-        import pandas as pd
-        import plotly.express as px
+    if not history:
+        st.info("No history available yet.")
+        st.stop()
 
-        df = pd.DataFrame(history).reset_index(drop=True)
+    df = pd.DataFrame(history)
 
-        # -------- CLEAR BUTTON --------
-        col1, col2 = st.columns([3,1])
-        with col2:
-            if st.button("🗑️ Clear History"):
-                save_history([])
-                st.success("History cleared!")
-                st.rerun()
+    # -------------------------
+    # AI INSIGHT
+    # -------------------------
+    st.markdown("### 🧠 AI Insight")
 
-        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+    most_common = df["condition"].mode()[0]
+    avg_conf = df["confidence"].mean()
 
-        # =========================================================
-        # 🔥 GRAPHS SECTION
-        # =========================================================
-        col1, col2 = st.columns(2)
+    st.success(
+        f"Most common condition: **{most_common}** | "
+        f"Average confidence: **{avg_conf:.1f}%**"
+    )
 
-        # -------- STEM STYLE GRAPH (FIXED LABELS) --------
-        with col1:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
+    # -------------------------
+    # STEM GRAPH (PLOTLY)
+    # -------------------------
+    st.markdown("### 🌿 Condition Frequency (Stem Graph)")
 
-            # meaningful x labels
-            df["Record"] = ["R" + str(i+1) for i in range(len(df))]
+    condition_counts = df["condition"].value_counts()
 
-            fig = px.scatter(
-                df,
-                x="Record",
-                y="confidence",
-                hover_data=["disease", "symptoms"],
-                title="Confidence Trend (Recent Analyses)"
-            )
+    x_vals = condition_counts.index.tolist()
+    y_vals = condition_counts.values.tolist()
 
-            fig.update_traces(mode="markers+lines")
+    fig = go.Figure()
 
-            st.plotly_chart(fig, use_container_width=True)
+    # Stem lines
+    for x, y in zip(x_vals, y_vals):
+        fig.add_trace(go.Scatter(
+            x=[x, x],
+            y=[0, y],
+            mode="lines",
+            showlegend=False
+        ))
 
-            st.markdown('</div>', unsafe_allow_html=True)
+    # Markers
+    fig.add_trace(go.Scatter(
+        x=x_vals,
+        y=y_vals,
+        mode="markers+text",
+        text=y_vals,
+        textposition="top center",
+        name="Frequency"
+    ))
 
-        # -------- TOP SYMPTOMS GRAPH --------
-        with col2:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
+    fig.update_layout(
+        xaxis_title="Condition",
+        yaxis_title="Frequency",
+        title="How Often Each Condition Appears",
+        height=400
+    )
 
-            all_symptoms = []
-            for s in df["symptoms"]:
-                all_symptoms.extend(s)
+    st.plotly_chart(fig, use_container_width=True)
 
-            sym_df = pd.Series(all_symptoms).value_counts().reset_index()
-            sym_df.columns = ["Symptom", "Count"]
+    # -------------------------
+    # RECENT ACTIVITY
+    # -------------------------
+    st.markdown("### 🕒 Recent Activity")
 
-            fig2 = px.bar(
-                sym_df.head(6),
-                x="Symptom",
-                y="Count",
-                title="Top Symptoms"
-            )
+    recent_df = df.tail(10).iloc[::-1]
 
-            st.plotly_chart(fig2, use_container_width=True)
+    for idx, row in recent_df.iterrows():
+        with st.container():
+            col1, col2 = st.columns([3, 1])
 
-            st.markdown('</div>', unsafe_allow_html=True)
+            with col1:
+                st.subheader(row["condition"])
+                st.caption(f"Symptoms: {row['symptoms']}")
 
-        st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
+            with col2:
+                st.metric(
+                    label="Confidence",
+                    value=f"{row['confidence']:.1f}%"
+                )
 
-        # =========================================================
-        # 🧠 INSIGHTS
-        # =========================================================
-        avg_conf = df["confidence"].mean()
-        most_common = df["disease"].mode()[0]
-
-        st.markdown(f"""
-        <div class="card">
-            <h3>🧠 AI Insight</h3>
-            <p class="summary">
-            Your most common condition is <b>{most_common}</b>.
-            Average confidence is <b>{round(avg_conf,1)}%</b>.
-            This suggests {"stable patterns" if avg_conf > 60 else "variable symptoms"}.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
-
-        # =========================================================
-        # 🕒 RECENT ACTIVITY (GRID)
-        # =========================================================
-        st.markdown("### 🕒 Recent Activity")
-
-        recent = list(reversed(history))[:10]
-        cols = st.columns(2)
-
-        for i, h in enumerate(recent):
-
-            with cols[i % 2]:
-
-                st.markdown(f"""
-                <div class="card" style="margin-bottom:12px;">
-
-                    <p style="color:#64748b; font-size:12px;">
-                        Record #{len(history)-i}
-                    </p>
-
-                    <div style="font-size:18px; font-weight:600;">
-                        {h['disease']}
-                    </div>
-
-                    <div style="margin-top:6px;">
-                        <span style="
-                            background: rgba(99,102,241,0.15);
-                            color:#818cf8;
-                            padding:4px 10px;
-                            border-radius:8px;
-                            font-size:12px;
-                        ">
-                            {h['confidence']}%
-                        </span>
-                    </div>
-
-                    <div style="margin-top:10px; font-size:13px; color:#cbd5f5;">
-                        {", ".join(h['symptoms'])}
-                    </div>
-
-                </div>
-                """, unsafe_allow_html=True)
-
-    else:
-        st.info("No history available yet. Start analyzing to generate data.")     
+            st.divider()   
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
