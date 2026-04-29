@@ -6,6 +6,7 @@ from collections import Counter  # for counting frequency
 import re
 import plotly.graph_objects as go
 
+
 FILE_NAME = "history.json"  # create file handler
 
 
@@ -259,6 +260,169 @@ def generate_report(res, interactions, age, symptoms, habits):
 
     return report
 
+# ---------------- PDF REPORT ----------------
+# ---------------- PDF REPORT ----------------
+# REPLACE your old generate_pdf_report() completely
+
+from fpdf import FPDF
+import re
+
+def generate_pdf_report(report_text, filename="health_report.pdf"):
+
+    # Remove emojis / unicode symbols that FPDF latin-1 can't handle
+    clean_text = report_text.encode("latin-1", "ignore").decode("latin-1")
+
+    # Optional extra cleanup for markdown symbols
+    clean_text = re.sub(r"[*#•]", "", clean_text)
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Safe built-in font
+    pdf.set_font("Arial", size=12)
+
+    for line in clean_text.split("\n"):
+        if line.strip():
+            pdf.multi_cell(0, 8, line)
+
+    pdf.output(filename)
+
+    return filename
+
+
+# ---------------- AI CHATBOT ----------------
+# ---------------- AI CHATBOT ----------------
+def health_chatbot(user_input):
+    text = user_input.lower().strip()
+
+    # ---------------- GENERAL HEALTH ADVICE ----------------
+    if "reduce fever" in text or "lower fever" in text or "fever" in text:
+        return """
+🌡️ To help reduce fever:
+
+• Drink plenty of water and fluids
+• Take proper rest
+• Use Paracetamol/Acetaminophen if appropriate
+• Wear light clothing
+• Monitor temperature regularly
+
+⚠️ Seek medical help if:
+• Fever is very high
+• Lasts more than 3 days
+• Breathing issues occur
+""".strip()
+
+    if "joint pain" in text:
+        return """
+🦴 To help reduce joint pain:
+
+• Rest affected joints
+• Use warm/cold compress
+• Stay hydrated
+• Gentle stretching
+• Anti-inflammatory medicine if appropriate
+
+⚠️ Consult a doctor if:
+• Swelling increases
+• Severe pain continues
+• Fever accompanies pain
+""".strip()
+
+    if "headache" in text:
+        return """
+🤕 For headache relief:
+
+• Rest in a quiet room
+• Drink water
+• Avoid screen strain
+• Consider pain relief medicine if safe
+
+⚠️ Seek help if:
+• Severe sudden headache
+• Vision issues
+• Vomiting
+""".strip()
+
+    # ---------------- SYMPTOM ANALYSIS ----------------
+    symptoms = extract_symptoms(text)
+    normalized = normalize_symptoms(symptoms)
+
+    if normalized:
+        results = predict_category(normalized, age=30)
+
+        if results:
+            top = results[0]
+
+            return f"""
+🩺 Possible Condition: {top['disease']}
+
+💊 Medicine: {', '.join(top['medicines'])}
+📏 Dosage: {top['dosage']}
+
+⚠️ Warning: {top['warnings']}
+🛡️ Precautions: {top['precautions']}
+
+📊 Confidence: {top['confidence']}%
+""".strip()
+
+    # ---------------- MEDICINE QUESTIONS ----------------
+    for entry in health_data:
+        if entry["disease"].lower() in text:
+
+            return f"""
+💊 For {entry['disease']}:
+
+Medicine: {', '.join(entry['medicines'])}
+Dosage: {entry['dosage']}
+
+🛡️ Precautions: {entry['precautions']}
+⚠️ Warnings: {entry['warnings']}
+""".strip()
+
+    # ---------------- DRUG INTERACTION ----------------
+    for med1, med2 in drug_interactions:
+
+        if med1.lower() in text and med2.lower() in text:
+
+            interaction = drug_interactions[(med1, med2)]
+
+            return f"""
+⚠️ Drug Interaction Alert
+
+Severity: {interaction['severity'].upper()}
+
+{interaction['message']}
+""".strip()
+
+    # ---------------- GREETING ----------------
+    if text in ["hi", "hello", "hey"]:
+        return """
+👋 Hello! I’m your AI Health Assistant.
+
+I can help with:
+• Symptom analysis
+• Disease prediction
+• Medicines
+• Precautions
+• Drug interactions
+""".strip()
+
+    # ---------------- DEFAULT ----------------
+    return """
+🤖 I can help with:
+
+• Symptom analysis
+• Disease prediction
+• Medicines
+• Precautions
+• Drug interactions
+
+💡 Examples:
+• I have fever and cough
+• Medicine for headache
+• Ibuprofen with alcohol
+• How to reduce fever
+""".strip()
 
 # ---------------- HISTORY TRACK ----------------
 

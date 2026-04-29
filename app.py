@@ -6,7 +6,51 @@ import plotly.graph_objects as go
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="AI Health Assistant", layout="wide")
+# ---------------- TOP RIGHT FLOATING CHATBOT ----------------
+# REPLACE your current top chatbot CSS block (the one after st.set_page_config)
 
+# ---------------- TOP RIGHT CHATBOT BUTTON ----------------
+st.markdown("""
+<style>
+/* Add top spacing so button isn't cut */
+.block-container {
+    padding-top: 5rem !important;
+}
+
+/* Floating chatbot container */
+div[data-testid="stButton"][key="top_floating_chat"] {
+    position: fixed;
+    top: 18px;
+    right: 25px;
+    z-index: 99999;
+}
+
+/* Button style */
+div[data-testid="stButton"][key="top_floating_chat"] button {
+    background: #4f46e5 !important;
+    color: white !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 12px 18px !important;
+    border-radius: 999px !important;
+    border: none !important;
+    min-width: 150px !important;
+    height: 55px !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.35) !important;
+}
+
+/* Hover */
+div[data-testid="stButton"][key="top_floating_chat"] button:hover {
+    background: #6366f1 !important;
+    transform: scale(1.05);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Visible labeled chatbot button
+if st.button("🤖 AI Chatbot", key="top_floating_chat"):
+    st.session_state.page = "🤖 Chatbot"
+    st.rerun()  
 # ---------------- PREMIUM UI (CSS) ----------------
 
 def divider():
@@ -141,16 +185,149 @@ div[role="radiogroup"] > label[data-checked="true"] {
 
 /* REMOVE RADIO DOT */
 div[role="radiogroup"] input {
-    display: none;
+    display: none;,
+/* FLOATING CHATBOT BUTTON */
+.chat-float {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #4f46e5;
+    color: white;
+    font-size: 28px;
+    padding: 14px 18px;
+    border-radius: 50%;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+    z-index: 9999;
+    transition: 0.3s ease;
+},
+/* CHATBOT POPUP WINDOW */
+.chat-popup {
+    position: fixed;
+    bottom: 95px;
+    right: 25px;
+    width: 360px;
+    max-height: 520px;
+    overflow-y: auto;
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.45);
+    z-index: 9998;
+}
+
+/* CHAT TITLE */
+.chat-header {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+/* CHAT SUBTITLE */
+.chat-sub {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 14px;
+},
+
+.chat-float:hover {
+    transform: scale(1.08);
+    background: #6366f1;
+}
 }
 </style>
 """, unsafe_allow_html=True)
 
 if "page" not in st.session_state:
     st.session_state.page = "🏠 Home"
+    
+if "chat_open" not in st.session_state:
+    st.session_state.chat_open = False
 
-# if "analyze_clicked" not in st.session_state:
-#     st.session_state.analyze_clicked = False
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+# ---------------- CHATBOT WINDOW ----------------
+if st.session_state.chat_open:
+
+    st.markdown("""
+    <div class="chat-popup">
+        <div class="chat-header">🤖 AI Health Chatbot</div>
+        <div class="chat-sub">
+            Ask symptoms, medicines, precautions, or health advice
+        </div>
+    """, unsafe_allow_html=True)
+
+    chat_container = st.container()
+
+    with chat_container:
+
+        # ---------------- CHAT HISTORY INIT ----------------
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+
+        # ---------------- CLOSE BUTTON ----------------
+        close_col1, close_col2 = st.columns([5, 1])
+
+        with close_col2:
+            if st.button("✖", key="close_chat"):
+                st.session_state.chat_open = False
+                st.rerun()
+
+        # ---------------- USER INPUT ----------------
+        user_chat = st.text_input(
+            "Type your health question...",
+            placeholder="Example: I have fever and cough",
+            key="chat_input_box"
+        )
+
+        # ---------------- SEND BUTTON ----------------
+        if st.button("📩 Send", key="send_chat"):
+
+            if user_chat.strip():
+
+                bot_reply = health_chatbot(user_chat)
+
+                # Save user message
+                st.session_state.chat_history.append(
+                    {"role": "user", "message": user_chat}
+                )
+
+                # Save bot reply
+                st.session_state.chat_history.append(
+                    {"role": "bot", "message": bot_reply}
+                )
+
+                st.rerun()
+
+        # ---------------- CLEAR CHAT ----------------
+        if st.button("🗑 Clear Chat", key="clear_chat"):
+            st.session_state.chat_history = []
+            st.rerun()
+
+        st.divider()
+
+        # ---------------- DISPLAY CHAT HISTORY ----------------
+        for chat in reversed(st.session_state.chat_history):
+
+            if chat["role"] == "user":
+                st.markdown(f"""
+                <div class="card" style="margin-bottom:10px;">
+                    <b>🧑 You:</b><br>{chat['message']}
+                </div>
+                """, unsafe_allow_html=True)
+
+            else:
+                st.markdown(f"""
+                <div class="card" style="margin-bottom:10px;">
+                    <b>🤖 AI:</b><br>{chat['message']}
+                </div>
+                """, unsafe_allow_html=True)
+
+    # ---------------- CLOSE POPUP DIV ----------------
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------- SIDEBAR ----------------
 st.sidebar.markdown("""
@@ -168,10 +345,26 @@ MENU
 """, unsafe_allow_html=True)
 
 
+page_options = [
+    "🏠 Home",
+    "🩺 Analyze",
+    "📊 Analytics",
+    "📜History",
+    "🤖 Chatbot",
+    "ℹ️ About"
+]
+
+# Prevent crash if page is missing
+if "page" not in st.session_state:
+    st.session_state.page = "🏠 Home"
+
+if st.session_state.page not in page_options:
+    st.session_state.page = "🏠 Home"
+
 page = st.sidebar.radio(
     "",
-    ["🏠 Home", "🩺 Analyze","📊 Analytics","📜History" ,"ℹ️ About"],
-    index=["🏠 Home", "🩺 Analyze", "📊 Analytics", "ℹ️ About"].index(st.session_state.page)
+    page_options,
+    index=page_options.index(st.session_state.page)
 )
 
 # ---------------- HOME PAGE ----------------
@@ -389,36 +582,44 @@ elif page == "🩺 Analyze":
         # 👉 RESULT BUTTON INSIDE FLOW
         if st.button("Get Results", key="result_btn3"):
 
+
             results = predict_category(normalized, age)
 
             if results and len(results) > 0:
-                # create columns (max 3)
-                cols = st.columns(min(len(results), 3))
 
-                for i, (col, res) in enumerate(zip(cols, results), 1):
+                # Always show up to 3 side-by-side columns
+                cols = st.columns(3)
 
-                    with col:
+                for i in range(min(len(results), 3)):
+
+                    res = results[i]
+
+                    with cols[i]:
+
                         interactions = check_interaction(res['medicines'], habits)
 
-                        # Label
-                        if i == 1:
+                        # -------- LABEL --------
+                        if i == 0:
                             st.success("🟢 Most Likely")
-                        elif i == 2:
+                        elif i == 1:
                             st.warning("🟡 Possible")
                         else:
                             st.info("🔵 Less Likely")
 
-                        # Card UI
+                        # -------- CARD --------
                         st.markdown(f"""
                         <div class="card">
-                            <p style="color:#94a3b8;">Option {i}</p>
+                            <p style="color:#94a3b8;">Option {i+1}</p>
                             <h4>{res['disease']}</h4>
-                            <p>Confidence: {res['confidence']}%</p>
+                            <p><b>Confidence:</b> {res['confidence']}%</p>
+                            <p><b>Medicine:</b> {", ".join(res['medicines'])}</p>
+                            <p><b>Dosage:</b> {res['dosage']}</p>
                         </div>
                         """, unsafe_allow_html=True)
 
-                        # Expandable full report
+                        # -------- FULL REPORT --------
                         with st.expander("View Full Report"):
+
                             report = generate_report(
                                 res,
                                 interactions,
@@ -427,16 +628,36 @@ elif page == "🩺 Analyze":
                                 habits
                             )
 
-                            st.markdown(report)
+                            st.text(report)
 
                             import uuid
+
+                            # TXT download
                             st.download_button(
                                 label="📄 Download Report",
                                 data=report,
-                                file_name=f"health_report_{i}.txt",
+                                file_name=f"health_report_{i+1}.txt",
                                 mime="text/plain",
                                 key=f"download_{i}_{uuid.uuid4()}"
                             )
+
+                            # PDF download
+                            pdf_file = generate_pdf_report(
+                                report,
+                                f"health_report_{i+1}.pdf"
+                            )
+
+                            with open(pdf_file, "rb") as pdf:
+                                st.download_button(
+                                    label="📑 Download PDF",
+                                    data=pdf,
+                                    file_name=f"health_report_{i+1}.pdf",
+                                    mime="application/pdf",
+                                    key=f"pdf_{i}_{uuid.uuid4()}"
+                                )
+
+            else:
+                st.error("No matching condition found.")
 # ---------------- ANALYTICS ----------------
 elif page == "📊 Analytics":
 
@@ -841,6 +1062,79 @@ elif page == "📜History":
 
     else:
         st.info("No history available yet. Start analyzing to generate data.")
+elif page == "🤖 Chatbot":
+
+    st.title("🤖 AI Health Chatbot")
+    st.caption("Ask symptoms, medicines, precautions, or drug interactions")
+
+    # Chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    # User input
+    user_chat = st.text_input(
+        "Type your health question:",
+        placeholder="Example: I have fever and cough",
+        key="chat_page_input"
+    )
+
+    col1, col2 = st.columns([1,1])
+
+    # Send button
+    with col1:
+        if st.button("📩 Send", key="chat_page_send"):
+
+            if user_chat.strip():
+
+                bot_reply = health_chatbot(user_chat)
+
+                st.session_state.chat_history.append(
+                    {"role": "user", "message": user_chat}
+                )
+
+                st.session_state.chat_history.append(
+                    {"role": "bot", "message": bot_reply}
+                )
+
+                st.rerun()
+
+    # Clear button
+    with col2:
+        if st.button("🗑️ Clear Chat", key="chat_page_clear"):
+            st.session_state.chat_history = []
+            st.rerun()
+
+    st.divider()
+
+    # Display messages
+    if st.session_state.chat_history:
+
+        for chat in reversed(st.session_state.chat_history):
+
+            if chat["role"] == "user":
+                for chat in reversed(st.session_state.chat_history):
+
+                    if chat["role"] == "user":
+                        st.markdown("### 🧑 You:")
+                        st.write(chat["message"])
+
+                    else:
+                        st.markdown("### 🤖 AI:")
+                        st.write(chat["message"])
+
+                    st.divider()
+
+            else:
+                st.markdown(f"""
+                <div class="card">
+                    <b>🤖 AI:</b><br>{chat['message']}
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    else:
+        st.info("Start chatting with your AI Health Assistant.")
 # ---------------- ABOUT ----------------
 elif page == "ℹ️ About":
 
@@ -977,4 +1271,4 @@ elif page == "ℹ️ About":
 ">
 </div>
 """, unsafe_allow_html=True)
-    
+
