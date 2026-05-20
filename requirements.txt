@@ -1,5 +1,8 @@
 streamlit
-plotly
-numpy
 pandas
-
+numpy
+scikit-learn
+plotly
+google-generativeai
+python-dotenv
+fpdf
