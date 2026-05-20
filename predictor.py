@@ -5,6 +5,18 @@ import plotly.express as px  # graphs
 from collections import Counter  # for counting frequency
 import re
 import plotly.graph_objects as go
+# from langchain_google_genai import ChatGoogleGenerativeAI
+# from langchain_core.messages import HumanMessage, SystemMessage
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# llm = ChatGoogleGenerativeAI(
+#     model="gemini-pro",
+#     temperature=0.3,
+#     google_api_key=os.getenv("GOOGLE_API_KEY")
+# )
 
 
 FILE_NAME = "history.json"  # create file handler
@@ -261,8 +273,6 @@ def generate_report(res, interactions, age, symptoms, habits):
     return report
 
 # ---------------- PDF REPORT ----------------
-# ---------------- PDF REPORT ----------------
-# REPLACE your old generate_pdf_report() completely
 
 from fpdf import FPDF
 import re
@@ -291,57 +301,8 @@ def generate_pdf_report(report_text, filename="health_report.pdf"):
 
 
 # ---------------- AI CHATBOT ----------------
-# ---------------- AI CHATBOT ----------------
-def health_chatbot(user_input):
-    text = user_input.lower().strip()
+# ---------------- LLM HEALTH CHATBOT ----------------
 
-    # ---------------- GENERAL HEALTH ADVICE ----------------
-    if "reduce fever" in text or "lower fever" in text or "fever" in text:
-        return """
-🌡️ To help reduce fever:
-
-• Drink plenty of water and fluids
-• Take proper rest
-• Use Paracetamol/Acetaminophen if appropriate
-• Wear light clothing
-• Monitor temperature regularly
-
-⚠️ Seek medical help if:
-• Fever is very high
-• Lasts more than 3 days
-• Breathing issues occur
-""".strip()
-
-    if "joint pain" in text:
-        return """
-🦴 To help reduce joint pain:
-
-• Rest affected joints
-• Use warm/cold compress
-• Stay hydrated
-• Gentle stretching
-• Anti-inflammatory medicine if appropriate
-
-⚠️ Consult a doctor if:
-• Swelling increases
-• Severe pain continues
-• Fever accompanies pain
-""".strip()
-
-    if "headache" in text:
-        return """
-🤕 For headache relief:
-
-• Rest in a quiet room
-• Drink water
-• Avoid screen strain
-• Consider pain relief medicine if safe
-
-⚠️ Seek help if:
-• Severe sudden headache
-• Vision issues
-• Vomiting
-""".strip()
 
     # ---------------- SYMPTOM ANALYSIS ----------------
     symptoms = extract_symptoms(text)

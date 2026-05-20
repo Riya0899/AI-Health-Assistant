@@ -1,13 +1,15 @@
 import streamlit as st
 from predictor import *
+import streamlit as st
+from chatbot import get_ai_response
 import plotly.express as px
 import numpy as np
 import plotly.graph_objects as go
+from dotenv import load_dotenv
+load_dotenv()
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="AI Health Assistant", layout="wide")
-# ---------------- TOP RIGHT FLOATING CHATBOT ----------------
-# REPLACE your current top chatbot CSS block (the one after st.set_page_config)
 
 # ---------------- TOP RIGHT CHATBOT BUTTON ----------------
 st.markdown("""
@@ -47,18 +49,14 @@ div[data-testid="stButton"][key="top_floating_chat"] button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# Visible labeled chatbot button
-if st.button("🤖 AI Chatbot", key="top_floating_chat"):
-    st.session_state.page = "🤖 Chatbot"
-    st.rerun()  
 # ---------------- PREMIUM UI (CSS) ----------------
 
 def divider():
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
 def space(h=20):
-    st.markdown(f"<div style='height:{h}px'></div>", unsafe_allow_html=True) 
-    
+    st.markdown(f"<div style='height:{h}px'></div>", unsafe_allow_html=True)
+
 st.markdown("""
 <style>
 
@@ -80,7 +78,7 @@ st.markdown("""
     border-right: 1px solid rgba(255,255,255,0.05);
 }
 
-/* CARD (UPGRADED) */
+/* CARD */
 .card {
     background: #111827;
     padding: 18px;
@@ -110,18 +108,7 @@ st.markdown("""
     margin-top: 5px;
 }
 
-/* SECTION SPACING */
-.section {
-    margin-top: 20px;
-}
-
-/* SUMMARY TEXT */
-.summary {
-    font-size: 14px;
-    color: #cbd5f5;
-}
-
-/* BUTTON (UPGRADED) */
+/* BUTTON */
 .stButton>button {
     background: #4f46e5;
     border-radius: 8px;
@@ -140,7 +127,7 @@ st.markdown("""
     margin: 20px 0;
 }
 
-/* TEXT IMPROVEMENTS */
+/* TEXT */
 h1, h2, h3 {
     font-weight: 600;
 }
@@ -148,19 +135,8 @@ h1, h2, h3 {
 p {
     color: #cbd5f5;
 }
-/* SIDEBAR CONTAINER */
-[data-testid="stSidebar"] {
-    background: #0f172a;
-    border-right: 1px solid rgba(255,255,255,0.05);
-    padding-top: 10px;
-}
 
-/* RADIO GROUP */
-div[role="radiogroup"] {
-    gap: 4px;
-}
-
-/* MENU ITEM */
+/* SIDEBAR MENU */
 div[role="radiogroup"] > label {
     display: flex;
     align-items: center;
@@ -172,20 +148,20 @@ div[role="radiogroup"] > label {
     font-size: 14px;
 }
 
-/* HOVER */
 div[role="radiogroup"] > label:hover {
     background: rgba(255,255,255,0.04);
 }
 
-/* ACTIVE */
 div[role="radiogroup"] > label[data-checked="true"] {
     background: rgba(99,102,241,0.12);
     border: 1px solid rgba(99,102,241,0.35);
 }
 
-/* REMOVE RADIO DOT */
+/* REMOVE RADIO DOT (FIXED) */
 div[role="radiogroup"] input {
-    display: none;,
+    display: none;
+}
+
 /* FLOATING CHATBOT BUTTON */
 .chat-float {
     position: fixed;
@@ -201,8 +177,14 @@ div[role="radiogroup"] input {
     box-shadow: 0 8px 25px rgba(0,0,0,0.35);
     z-index: 9999;
     transition: 0.3s ease;
-},
-/* CHATBOT POPUP WINDOW */
+}
+
+.chat-float:hover {
+    transform: scale(1.08);
+    background: #6366f1;
+}
+
+/* CHAT POPUP */
 .chat-popup {
     position: fixed;
     bottom: 95px;
@@ -218,7 +200,7 @@ div[role="radiogroup"] input {
     z-index: 9998;
 }
 
-/* CHAT TITLE */
+/* CHAT HEADER */
 .chat-header {
     font-size: 20px;
     font-weight: 600;
@@ -230,104 +212,18 @@ div[role="radiogroup"] input {
     color: #94a3b8;
     font-size: 13px;
     margin-bottom: 14px;
-},
+}
 
-.chat-float:hover {
-    transform: scale(1.08);
-    background: #6366f1;
-}
-}
 </style>
 """, unsafe_allow_html=True)
 
+# ---------------- REST OF YOUR APP (UNCHANGED) ----------------
+
 if "page" not in st.session_state:
     st.session_state.page = "🏠 Home"
-    
-if "chat_open" not in st.session_state:
-    st.session_state.chat_open = False
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
-# ---------------- CHATBOT WINDOW ----------------
-if st.session_state.chat_open:
-
-    st.markdown("""
-    <div class="chat-popup">
-        <div class="chat-header">🤖 AI Health Chatbot</div>
-        <div class="chat-sub">
-            Ask symptoms, medicines, precautions, or health advice
-        </div>
-    """, unsafe_allow_html=True)
-
-    chat_container = st.container()
-
-    with chat_container:
-
-        # ---------------- CHAT HISTORY INIT ----------------
-        if "chat_history" not in st.session_state:
-            st.session_state.chat_history = []
-
-        # ---------------- CLOSE BUTTON ----------------
-        close_col1, close_col2 = st.columns([5, 1])
-
-        with close_col2:
-            if st.button("✖", key="close_chat"):
-                st.session_state.chat_open = False
-                st.rerun()
-
-        # ---------------- USER INPUT ----------------
-        user_chat = st.text_input(
-            "Type your health question...",
-            placeholder="Example: I have fever and cough",
-            key="chat_input_box"
-        )
-
-        # ---------------- SEND BUTTON ----------------
-        if st.button("📩 Send", key="send_chat"):
-
-            if user_chat.strip():
-
-                bot_reply = health_chatbot(user_chat)
-
-                # Save user message
-                st.session_state.chat_history.append(
-                    {"role": "user", "message": user_chat}
-                )
-
-                # Save bot reply
-                st.session_state.chat_history.append(
-                    {"role": "bot", "message": bot_reply}
-                )
-
-                st.rerun()
-
-        # ---------------- CLEAR CHAT ----------------
-        if st.button("🗑 Clear Chat", key="clear_chat"):
-            st.session_state.chat_history = []
-            st.rerun()
-
-        st.divider()
-
-        # ---------------- DISPLAY CHAT HISTORY ----------------
-        for chat in reversed(st.session_state.chat_history):
-
-            if chat["role"] == "user":
-                st.markdown(f"""
-                <div class="card" style="margin-bottom:10px;">
-                    <b>🧑 You:</b><br>{chat['message']}
-                </div>
-                """, unsafe_allow_html=True)
-
-            else:
-                st.markdown(f"""
-                <div class="card" style="margin-bottom:10px;">
-                    <b>🤖 AI:</b><br>{chat['message']}
-                </div>
-                """, unsafe_allow_html=True)
-
-    # ---------------- CLOSE POPUP DIV ----------------
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------- SIDEBAR ----------------
 st.sidebar.markdown("""
@@ -344,7 +240,6 @@ MENU
 </p>
 """, unsafe_allow_html=True)
 
-
 page_options = [
     "🏠 Home",
     "🩺 Analyze",
@@ -353,10 +248,6 @@ page_options = [
     "🤖 Chatbot",
     "ℹ️ About"
 ]
-
-# Prevent crash if page is missing
-if "page" not in st.session_state:
-    st.session_state.page = "🏠 Home"
 
 if st.session_state.page not in page_options:
     st.session_state.page = "🏠 Home"
@@ -1086,7 +977,7 @@ elif page == "🤖 Chatbot":
 
             if user_chat.strip():
 
-                bot_reply = health_chatbot(user_chat)
+                bot_reply = get_ai_response(user_chat)
 
                 st.session_state.chat_history.append(
                     {"role": "user", "message": user_chat}
@@ -1106,23 +997,17 @@ elif page == "🤖 Chatbot":
 
     st.divider()
 
-    # Display messages
+# Display messages (UI version)
     if st.session_state.chat_history:
 
         for chat in reversed(st.session_state.chat_history):
 
             if chat["role"] == "user":
-                for chat in reversed(st.session_state.chat_history):
-
-                    if chat["role"] == "user":
-                        st.markdown("### 🧑 You:")
-                        st.write(chat["message"])
-
-                    else:
-                        st.markdown("### 🤖 AI:")
-                        st.write(chat["message"])
-
-                    st.divider()
+                st.markdown(f"""
+                <div class="card">
+                    <b>🧑 You:</b><br>{chat['message']}
+                </div>
+                """, unsafe_allow_html=True)
 
             else:
                 st.markdown(f"""
